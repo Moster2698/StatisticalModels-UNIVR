@@ -1,4 +1,5 @@
 name: GitHub Actions Demo
+BOTLER_URL: localhost:8080
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on: [push]
 jobs:
@@ -16,3 +17,32 @@ jobs:
         run: |
           ls ${{ github.workspace }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
+      - name: Send Botler success notification
+        if: success()
+        run: |
+          payload=$(
+            jq -n \
+              --arg eventName "${{ github.event_name }}" \
+              --arg refName "${{ github.ref_name }}" \
+              --arg prNumber "${{ github.event.number || '' }}" \
+              --arg prTitle "${{ github.event.pull_request.title || '' }}" \
+              --arg repoName "${{ github.event.repository.name }}" \
+              --arg runUrl "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+              '{
+                "payload": {
+                  "status": 0,
+                  "status_message": "passed",
+                  "result": 0,
+                  "result_message": "passed",
+                  "type": $eventName,
+                  "branch": $refName,
+                  "pull_request_number": $prNumber,
+                  "pull_request_title": $prTitle,
+                  "repository": {
+                    "name": $repoName
+                  },
+                  "job_url": $runUrl
+                }
+              }'
+          )
+          curl -X POST -H "Content-Type: application/json" -d "$payload" $BOTLER_URL
