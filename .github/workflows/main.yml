@@ -1,5 +1,4 @@
 name: GitHub Actions Demo
-BOTLER_URL: localhost:8080
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on: [push]
 jobs:
@@ -45,4 +44,4 @@ jobs:
                 }
               }'
           )
-          curl -X POST -H "Content-Type: application/json" -d "$payload" $BOTLER_URL
+          echo $"payload"
